@@ -1,5 +1,6 @@
 using Blackened.Blue.Diagnostics.HealthChecks.MsSql;
 using Blackened.Blue.Diagnostics.HealthChecks.MySql;
+using Blackened.Blue.Diagnostics.HealthChecks.NpgSql;
 using Blackened.Blue.Diagnostics.HealthChecks.Oracle;
 using Endpoint;
 using Microsoft.EntityFrameworkCore;
@@ -13,22 +14,7 @@ builder.Services.AddAuthorization();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
-#region My Sql
-
-builder.Services.AddDbContext<MySqlDbContext>(options => options.UseMySQL(builder.Configuration.GetConnectionString("MySqlConnection")
-    ?? throw new InvalidOperationException("MySql services could not be registered because no connection string has been configured for dependency injection.")));
-builder.Services.AddDbContext<MySqlHealthCheck>(options => options.UseMySQL(builder.Configuration.GetConnectionString("MySqlConnection")
-    ?? throw new InvalidOperationException("MySql services could not be registered because no connection string has been configured for dependency injection.")));
-
-builder.Services.AddHealthChecks()
-    .AddCheck<MySqlHealthCheck<MySqlDbContext>>(name: "MySql", tags: ["ready"])
-    .AddCheck<MySqlHealthCheck>(name: "MySql (standalone)", tags: ["ready"])
-    .AddCheck(name: "MySql (connection string)", tags: ["ready"],
-        instance: new MySqlHealthCheck(builder.Configuration.GetConnectionString("MySqlConnection")));
-
-#endregion
-
-#region Ms Sql
+#region MsSql
 
 builder.Services.AddDbContext<MsSqlDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("MsSqlConnection")
     ?? throw new InvalidOperationException("MsSql services could not be registered because no connection string has been configured for dependency injection.")));
@@ -40,6 +26,36 @@ builder.Services.AddHealthChecks()
     .AddCheck<MsSqlHealthCheck>(name: "MsSql (standalone)", tags: ["ready"])
     .AddCheck(name: "MsSql (connection string)", tags: ["ready"],
         instance: new MsSqlHealthCheck(builder.Configuration.GetConnectionString("MsSqlConnection")));
+
+#endregion
+
+#region MySql
+
+builder.Services.AddDbContext<MySqlDbContext>(options => options.UseMySQL(builder.Configuration.GetConnectionString("MySqlConnection")
+                                                                          ?? throw new InvalidOperationException("MySql services could not be registered because no connection string has been configured for dependency injection.")));
+builder.Services.AddDbContext<MySqlHealthCheck>(options => options.UseMySQL(builder.Configuration.GetConnectionString("MySqlConnection")
+                                                                            ?? throw new InvalidOperationException("MySql services could not be registered because no connection string has been configured for dependency injection.")));
+
+builder.Services.AddHealthChecks()
+    .AddCheck<MySqlHealthCheck<MySqlDbContext>>(name: "MySql", tags: ["ready"])
+    .AddCheck<MySqlHealthCheck>(name: "MySql (standalone)", tags: ["ready"])
+    .AddCheck(name: "MySql (connection string)", tags: ["ready"],
+        instance: new MySqlHealthCheck(builder.Configuration.GetConnectionString("MySqlConnection")));
+
+#endregion
+
+#region NpgSql
+
+builder.Services.AddDbContext<NpgSqlDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("NpgSqlConnection")
+    ?? throw new InvalidOperationException("NpgSql services could not be registered because no connection string has been configured for dependency injection.")));
+builder.Services.AddDbContext<NpgSqlHealthCheck>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("NpgSqlConnection")
+    ?? throw new InvalidOperationException("NpgSql services could not be registered because no connection string has been configured for dependency injection.")));
+
+builder.Services.AddHealthChecks()
+    .AddCheck<NpgSqlHealthCheck<NpgSqlDbContext>>(name: "NpgSql", tags: ["ready"])
+    .AddCheck<NpgSqlHealthCheck>(name: "NpgSql (standalone)", tags: ["ready"])
+    .AddCheck(name: "NpgSql (connection string)", tags: ["ready"],
+        instance: new NpgSqlHealthCheck(builder.Configuration.GetConnectionString("NpgSqlConnection")));
 
 #endregion
 
