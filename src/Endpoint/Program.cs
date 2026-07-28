@@ -1,3 +1,4 @@
+using Blackened.Blue.Diagnostics.HealthChecks.Elasticsearch;
 using Blackened.Blue.Diagnostics.HealthChecks.MongoDb;
 using Blackened.Blue.Diagnostics.HealthChecks.MsSql;
 using Blackened.Blue.Diagnostics.HealthChecks.MySql;
@@ -5,6 +6,7 @@ using Blackened.Blue.Diagnostics.HealthChecks.NpgSql;
 using Blackened.Blue.Diagnostics.HealthChecks.Oracle;
 using Blackened.Blue.Diagnostics.HealthChecks.Redis;
 using Blackened.Blue.Diagnostics.HealthChecks.Sqlite;
+using Elastic.Clients.Elasticsearch;
 using Endpoint;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -18,6 +20,18 @@ builder.Services.AddAuthorization();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+
+#region Elasticsearch
+
+builder.Services.AddSingleton(new ElasticsearchClient(new Uri(builder.Configuration.GetConnectionString("ElasticsearchConnection")
+    ?? throw new InvalidOperationException("Elasticsearch services could not be registered because no connection string has been configured for dependency injection."))));
+
+builder.Services.AddHealthChecks()
+    .AddCheck<ElasticsearchHealthCheck>(name: "Elasticsearch", tags: ["ready"])
+    .AddCheck(name: "Elasticsearch (connection string)", tags: ["ready"],
+        instance: new ElasticsearchHealthCheck(builder.Configuration.GetConnectionString("ElasticsearchConnection")));
+
+#endregion
 
 #region MongoDb
 
