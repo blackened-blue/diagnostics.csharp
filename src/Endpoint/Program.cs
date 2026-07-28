@@ -1,4 +1,5 @@
 using Blackened.Blue.Diagnostics.HealthChecks.Elasticsearch;
+using Blackened.Blue.Diagnostics.HealthChecks.Kafka;
 using Blackened.Blue.Diagnostics.HealthChecks.MongoDb;
 using Blackened.Blue.Diagnostics.HealthChecks.MsSql;
 using Blackened.Blue.Diagnostics.HealthChecks.MySql;
@@ -6,6 +7,7 @@ using Blackened.Blue.Diagnostics.HealthChecks.NpgSql;
 using Blackened.Blue.Diagnostics.HealthChecks.Oracle;
 using Blackened.Blue.Diagnostics.HealthChecks.Redis;
 using Blackened.Blue.Diagnostics.HealthChecks.Sqlite;
+using Confluent.Kafka;
 using Elastic.Clients.Elasticsearch;
 using Endpoint;
 using Microsoft.EntityFrameworkCore;
@@ -30,6 +32,17 @@ builder.Services.AddHealthChecks()
     .AddCheck<ElasticsearchHealthCheck>(name: "Elasticsearch", tags: ["ready"])
     .AddCheck(name: "Elasticsearch (connection string)", tags: ["ready"],
         instance: new ElasticsearchHealthCheck(builder.Configuration.GetConnectionString("ElasticsearchConnection")));
+
+#endregion
+
+#region Kafka
+
+builder.Services.AddSingleton<IAdminClient>(new AdminClientBuilder(builder.Configuration.GetSection("Kafka:Producer").AsEnumerable(makePathsRelative: true)).Build());
+
+builder.Services.AddHealthChecks()
+    .AddCheck<KafkaHealthCheck>(name: "Kafka", tags: ["ready"])
+    .AddCheck(name: "Kafka (connection string)", tags: ["ready"],
+        instance: new KafkaHealthCheck(builder.Configuration.GetConnectionString("KafkaConnection")));
 
 #endregion
 

@@ -13,6 +13,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\HealthChecks.Elasticsearch\HealthChecks.Elasticsearch.csproj" />
+      <ProjectReference Include="..\HealthChecks.Kafka\HealthChecks.Kafka.csproj" />
       <ProjectReference Include="..\HealthChecks.MongoDb\HealthChecks.MongoDb.csproj" />
       <ProjectReference Include="..\HealthChecks.MsSql\HealthChecks.MsSql.csproj" />
       <ProjectReference Include="..\HealthChecks.MySql\HealthChecks.MySql.csproj" />

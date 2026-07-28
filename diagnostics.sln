@@ -18,6 +18,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HealthChecks.MongoDb", "src
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HealthChecks.Elasticsearch", "src\HealthChecks.Elasticsearch\HealthChecks.Elasticsearch.csproj", "{1B9668D4-6342-4BB1-B2F2-315AA5D794D1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HealthChecks.Kafka", "src\HealthChecks.Kafka\HealthChecks.Kafka.csproj", "{E76FE915-9812-477A-8D9F-24EC75D6A1ED}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -60,5 +62,9 @@ Global
 		{1B9668D4-6342-4BB1-B2F2-315AA5D794D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1B9668D4-6342-4BB1-B2F2-315AA5D794D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1B9668D4-6342-4BB1-B2F2-315AA5D794D1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E76FE915-9812-477A-8D9F-24EC75D6A1ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E76FE915-9812-477A-8D9F-24EC75D6A1ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E76FE915-9812-477A-8D9F-24EC75D6A1ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E76FE915-9812-477A-8D9F-24EC75D6A1ED}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
