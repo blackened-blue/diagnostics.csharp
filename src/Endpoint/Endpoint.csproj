@@ -12,6 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\HealthChecks.MongoDb\HealthChecks.MongoDb.csproj" />
       <ProjectReference Include="..\HealthChecks.MsSql\HealthChecks.MsSql.csproj" />
       <ProjectReference Include="..\HealthChecks.MySql\HealthChecks.MySql.csproj" />
       <ProjectReference Include="..\HealthChecks.NpgSql\HealthChecks.NpgSql.csproj" />

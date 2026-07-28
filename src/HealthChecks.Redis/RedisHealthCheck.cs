@@ -3,7 +3,7 @@ using StackExchange.Redis;
 
 namespace Blackened.Blue.Diagnostics.HealthChecks.Redis;
 
-public class RedisHealthCheck : IHealthCheck
+public sealed class RedisHealthCheck : IHealthCheck
 {
     private readonly IConnectionMultiplexer _connection;
     

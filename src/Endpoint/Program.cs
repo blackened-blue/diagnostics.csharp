@@ -1,3 +1,4 @@
+using Blackened.Blue.Diagnostics.HealthChecks.MongoDb;
 using Blackened.Blue.Diagnostics.HealthChecks.MsSql;
 using Blackened.Blue.Diagnostics.HealthChecks.MySql;
 using Blackened.Blue.Diagnostics.HealthChecks.NpgSql;
@@ -7,6 +8,7 @@ using Blackened.Blue.Diagnostics.HealthChecks.Sqlite;
 using Endpoint;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using MongoDB.Driver;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +18,18 @@ builder.Services.AddAuthorization();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+
+#region MongoDb
+
+builder.Services.AddSingleton<IMongoClient>(new MongoClient(builder.Configuration.GetConnectionString("MongoDbConnection")
+    ?? throw new InvalidOperationException("MongoDb services could not be registered because no connection string has been configured for dependency injection.")));
+
+builder.Services.AddHealthChecks()
+    .AddCheck<MongoDbHealthCheck>(name: "MongoDb", tags: ["ready"])
+    .AddCheck(name: "MongoDb (connection string)", tags: ["ready"],
+        instance: new MongoDbHealthCheck(builder.Configuration.GetConnectionString("MongoDbConnection")));
+
+#endregion
 
 #region MsSql
 
