@@ -1,4 +1,5 @@
 using Blackened.Blue.Diagnostics.HealthChecks.MySql;
+using Blackened.Blue.Diagnostics.HealthChecks.Oracle;
 using Endpoint;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -25,7 +26,22 @@ builder.Services.AddHealthChecks()
         instance: new MySqlHealthCheck(builder.Configuration.GetConnectionString("MySqlConnection")));
 
 #endregion
-    
+
+#region Oracle
+
+builder.Services.AddDbContext<OracleDbContext>(options => options.UseOracle(builder.Configuration.GetConnectionString("OracleConnection")
+    ?? throw new InvalidOperationException("Oracle services could not be registered because no connection string has been configured for dependency injection.")));
+builder.Services.AddDbContext<OracleHealthCheck>(options => options.UseOracle(builder.Configuration.GetConnectionString("OracleConnection")
+    ?? throw new InvalidOperationException("Oracle services could not be registered because no connection string has been configured for dependency injection.")));
+
+builder.Services.AddHealthChecks()
+    .AddCheck<OracleHealthCheck<OracleDbContext>>(name: "Oracle", tags: ["ready"])
+    .AddCheck<OracleHealthCheck>(name: "Oracle (standalone)", tags: ["ready"])
+    .AddCheck(name: "Oracle (connection string)", tags: ["ready"],
+        instance: new OracleHealthCheck(builder.Configuration.GetConnectionString("OracleConnection")));
+
+#endregion
+
 builder.Services.AddHealthChecks()
     .AddCheck(name: "self", check: () => HealthCheckResult.Healthy(), tags: ["live"]);
 
