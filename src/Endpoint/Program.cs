@@ -2,6 +2,7 @@ using Blackened.Blue.Diagnostics.HealthChecks.MsSql;
 using Blackened.Blue.Diagnostics.HealthChecks.MySql;
 using Blackened.Blue.Diagnostics.HealthChecks.NpgSql;
 using Blackened.Blue.Diagnostics.HealthChecks.Oracle;
+using Blackened.Blue.Diagnostics.HealthChecks.Sqlite;
 using Endpoint;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -74,13 +75,27 @@ builder.Services.AddHealthChecks()
 
 #endregion
 
+#region Sqlite
+
+builder.Services.AddDbContext<SqliteDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("SqliteConnection")
+    ?? throw new InvalidOperationException("Sqlite services could not be registered because no connection string has been configured for dependency injection.")));
+builder.Services.AddDbContext<SqliteHealthCheck>(options => options.UseSqlite(builder.Configuration.GetConnectionString("SqliteConnection")
+    ?? throw new InvalidOperationException("Sqlite services could not be registered because no connection string has been configured for dependency injection.")));
+
+builder.Services.AddHealthChecks()
+    .AddCheck<SqliteHealthCheck<SqliteDbContext>>(name: "Sqlite", tags: ["ready"])
+    .AddCheck<SqliteHealthCheck>(name: "Sqlite (standalone)", tags: ["ready"])
+    .AddCheck(name: "Sqlite (connection string)", tags: ["ready"],
+        instance: new SqliteHealthCheck(builder.Configuration.GetConnectionString("SqliteConnection")));
+
+#endregion
+
 builder.Services.AddHealthChecks()
     .AddCheck(name: "self", check: () => HealthCheckResult.Healthy(), tags: ["live"]);
 
 var app = builder.Build();
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
 app.MapHealthChecks("/health/live", HealthCheck.Live);
 app.MapHealthChecks("/health/ready", HealthCheck.Ready);

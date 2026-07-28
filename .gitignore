@@ -39,6 +39,11 @@ ScaffoldingReadMe.txt
 # dotenv environment variables file
 .env
 
+# Local SQLite database created at runtime by EnsureCreated
+**/app.db
+**/app.db-shm
+**/app.db-wal
+
 # Others
 ~$*
 *~
