@@ -2,10 +2,12 @@ using Blackened.Blue.Diagnostics.HealthChecks.MsSql;
 using Blackened.Blue.Diagnostics.HealthChecks.MySql;
 using Blackened.Blue.Diagnostics.HealthChecks.NpgSql;
 using Blackened.Blue.Diagnostics.HealthChecks.Oracle;
+using Blackened.Blue.Diagnostics.HealthChecks.Redis;
 using Blackened.Blue.Diagnostics.HealthChecks.Sqlite;
 using Endpoint;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -72,6 +74,18 @@ builder.Services.AddHealthChecks()
     .AddCheck<OracleHealthCheck>(name: "Oracle (standalone)", tags: ["ready"])
     .AddCheck(name: "Oracle (connection string)", tags: ["ready"],
         instance: new OracleHealthCheck(builder.Configuration.GetConnectionString("OracleConnection")));
+
+#endregion
+
+#region Redis
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("RedisConnection")
+    ?? throw new InvalidOperationException("Redis services could not be registered because no connection string has been configured for dependency injection.")));
+
+builder.Services.AddHealthChecks()
+    .AddCheck<RedisHealthCheck>(name: "Redis", tags: ["ready"])
+    .AddCheck(name: "Redis (connection string)", tags: ["ready"],
+        instance: new RedisHealthCheck(builder.Configuration.GetConnectionString("RedisConnection")));
 
 #endregion
 

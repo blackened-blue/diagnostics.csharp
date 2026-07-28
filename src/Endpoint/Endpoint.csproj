@@ -16,6 +16,7 @@
       <ProjectReference Include="..\HealthChecks.MySql\HealthChecks.MySql.csproj" />
       <ProjectReference Include="..\HealthChecks.NpgSql\HealthChecks.NpgSql.csproj" />
       <ProjectReference Include="..\HealthChecks.Oracle\HealthChecks.Oracle.csproj" />
+      <ProjectReference Include="..\HealthChecks.Redis\HealthChecks.Redis.csproj" />
       <ProjectReference Include="..\HealthChecks.Sqlite\HealthChecks.Sqlite.csproj" />
     </ItemGroup>
 

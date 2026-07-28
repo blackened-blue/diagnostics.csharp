@@ -12,6 +12,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HealthChecks.NpgSql", "src\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HealthChecks.Sqlite", "src\HealthChecks.Sqlite\HealthChecks.Sqlite.csproj", "{6840D716-62EC-4452-82A9-A83C9F9D6702}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HealthChecks.Redis", "src\HealthChecks.Redis\HealthChecks.Redis.csproj", "{1D6749CA-0CB9-4499-B711-807F63D11EFF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,5 +44,9 @@ Global
 		{6840D716-62EC-4452-82A9-A83C9F9D6702}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6840D716-62EC-4452-82A9-A83C9F9D6702}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6840D716-62EC-4452-82A9-A83C9F9D6702}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D6749CA-0CB9-4499-B711-807F63D11EFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D6749CA-0CB9-4499-B711-807F63D11EFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D6749CA-0CB9-4499-B711-807F63D11EFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D6749CA-0CB9-4499-B711-807F63D11EFF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
