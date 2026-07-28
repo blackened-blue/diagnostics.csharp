@@ -4,7 +4,6 @@
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <InvariantGlobalization>true</InvariantGlobalization>
     </PropertyGroup>
 
     <ItemGroup>
@@ -13,6 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\HealthChecks.MsSql\HealthChecks.MsSql.csproj" />
       <ProjectReference Include="..\HealthChecks.MySql\HealthChecks.MySql.csproj" />
       <ProjectReference Include="..\HealthChecks.Oracle\HealthChecks.Oracle.csproj" />
     </ItemGroup>

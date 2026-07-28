@@ -1,3 +1,4 @@
+using Blackened.Blue.Diagnostics.HealthChecks.MsSql;
 using Blackened.Blue.Diagnostics.HealthChecks.MySql;
 using Blackened.Blue.Diagnostics.HealthChecks.Oracle;
 using Endpoint;
@@ -24,6 +25,21 @@ builder.Services.AddHealthChecks()
     .AddCheck<MySqlHealthCheck>(name: "MySql (standalone)", tags: ["ready"])
     .AddCheck(name: "MySql (connection string)", tags: ["ready"],
         instance: new MySqlHealthCheck(builder.Configuration.GetConnectionString("MySqlConnection")));
+
+#endregion
+
+#region Ms Sql
+
+builder.Services.AddDbContext<MsSqlDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("MsSqlConnection")
+    ?? throw new InvalidOperationException("MsSql services could not be registered because no connection string has been configured for dependency injection.")));
+builder.Services.AddDbContext<MsSqlHealthCheck>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("MsSqlConnection")
+    ?? throw new InvalidOperationException("MsSql services could not be registered because no connection string has been configured for dependency injection.")));
+
+builder.Services.AddHealthChecks()
+    .AddCheck<MsSqlHealthCheck<MsSqlDbContext>>(name: "MsSql", tags: ["ready"])
+    .AddCheck<MsSqlHealthCheck>(name: "MsSql (standalone)", tags: ["ready"])
+    .AddCheck(name: "MsSql (connection string)", tags: ["ready"],
+        instance: new MsSqlHealthCheck(builder.Configuration.GetConnectionString("MsSqlConnection")));
 
 #endregion
 

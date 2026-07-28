@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Endpoint", "src\Endpoint\En
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HealthChecks.Oracle", "src\HealthChecks.Oracle\HealthChecks.Oracle.csproj", "{98F71B27-58CD-4934-98E1-1FDA47E308D9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HealthChecks.MsSql", "src\HealthChecks.MsSql\HealthChecks.MsSql.csproj", "{C24B5E35-62D8-4A27-BC6D-CBCB6AC9A728}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{98F71B27-58CD-4934-98E1-1FDA47E308D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{98F71B27-58CD-4934-98E1-1FDA47E308D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{98F71B27-58CD-4934-98E1-1FDA47E308D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C24B5E35-62D8-4A27-BC6D-CBCB6AC9A728}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C24B5E35-62D8-4A27-BC6D-CBCB6AC9A728}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C24B5E35-62D8-4A27-BC6D-CBCB6AC9A728}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C24B5E35-62D8-4A27-BC6D-CBCB6AC9A728}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
