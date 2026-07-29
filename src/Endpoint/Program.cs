@@ -1,3 +1,4 @@
+using Blackened.Blue.Diagnostics.HealthChecks.ClickHouse;
 using Blackened.Blue.Diagnostics.HealthChecks.CockroachDb;
 using Blackened.Blue.Diagnostics.HealthChecks.Couchbase;
 using Blackened.Blue.Diagnostics.HealthChecks.Elasticsearch;
@@ -9,6 +10,7 @@ using Blackened.Blue.Diagnostics.HealthChecks.NpgSql;
 using Blackened.Blue.Diagnostics.HealthChecks.Oracle;
 using Blackened.Blue.Diagnostics.HealthChecks.Redis;
 using Blackened.Blue.Diagnostics.HealthChecks.Sqlite;
+using ClickHouse.Client.ADO;
 using Confluent.Kafka;
 using Couchbase;
 using Elastic.Clients.Elasticsearch;
@@ -25,6 +27,18 @@ builder.Services.AddAuthorization();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+
+#region ClickHouse
+
+builder.Services.AddSingleton(new ClickHouseConnection(builder.Configuration.GetConnectionString("ClickHouseConnection")
+    ?? throw new InvalidOperationException("ClickHouse services could not be registered because no connection string has been configured for dependency injection.")));
+
+builder.Services.AddHealthChecks()
+    .AddCheck<ClickHouseHealthCheck>(name: "ClickHouse", tags: ["ready"])
+    .AddCheck(name: "ClickHouse (connection string)", tags: ["ready"],
+        instance: new ClickHouseHealthCheck(builder.Configuration.GetConnectionString("ClickHouseConnection")));
+
+#endregion
 
 #region CockroachDb
 
