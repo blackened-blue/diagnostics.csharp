@@ -15,6 +15,7 @@
       <ProjectReference Include="..\HealthChecks.ClickHouse\HealthChecks.ClickHouse.csproj" />
       <ProjectReference Include="..\HealthChecks.CockroachDb\HealthChecks.CockroachDb.csproj" />
       <ProjectReference Include="..\HealthChecks.Couchbase\HealthChecks.Couchbase.csproj" />
+      <ProjectReference Include="..\HealthChecks.Db2\HealthChecks.Db2.csproj" />
       <ProjectReference Include="..\HealthChecks.Elasticsearch\HealthChecks.Elasticsearch.csproj" />
       <ProjectReference Include="..\HealthChecks.Exasol\HealthChecks.Exasol.csproj" />
       <ProjectReference Include="..\HealthChecks.Greenplum\HealthChecks.Greenplum.csproj" />

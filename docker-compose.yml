@@ -17,6 +17,7 @@ volumes:
   oracle-data:
   redis-data:
   exasol-data:
+  db2-data:
 
 services:
 
@@ -104,6 +105,41 @@ services:
       timeout: 5s
       retries: 15
       start_period: 20s
+
+  # ---------------------------------------------------------------------
+  # Db2 — IBM only ships amd64/ppc64le/s390x builds (no arm64), so on
+  # Apple Silicon this runs under Rosetta emulation (Docker Desktop >
+  # Settings > General > "Use Rosetta for x86/amd64 emulation"). DBNAME
+  # auto-creates the `helloworld` database on first boot. DB2INSTANCE
+  # can't be set to `development` — Db2 instance names are OS-level and
+  # hard-capped at 8 characters (db2icrt fails with DBI20151E otherwise)
+  # — so the instance owner stays the default `db2inst1`. The app-facing
+  # `development` account is a separate OS user created after first boot
+  # and granted DBADM/SECADM, once after first boot:
+  #   docker exec db2 useradd -m -g db2iadm1 -p "$(openssl passwd -1 123456)" development
+  #   su - db2inst1 -c "db2 connect to helloworld && \
+  #     db2 'GRANT DBADM, SECADM, CONNECT ON DATABASE TO USER development'"
+  # ---------------------------------------------------------------------
+  db2:
+    image: icr.io/db2_community/db2:11.5.9.0
+    container_name: db2
+    platform: linux/amd64
+    privileged: true
+    networks: [diagnostics]
+    ports:
+      - "50000:50000"
+    environment:
+      LICENSE: accept
+      DB2INST1_PASSWORD: "123456"
+      DBNAME: helloworld
+    volumes:
+      - db2-data:/database
+    healthcheck:
+      test: ["CMD-SHELL", "su - db2inst1 -c 'db2 connect to helloworld' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 20
+      start_period: 180s
 
   # ---------------------------------------------------------------------
   # Elasticsearch. xpack security is on, so create the `development` user

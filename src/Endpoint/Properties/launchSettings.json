@@ -16,7 +16,8 @@
       "launchUrl": "health/live",
       "applicationUrl": "http://localhost:5094",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DYLD_FALLBACK_LIBRARY_PATH": "/opt/homebrew/lib:/usr/local/lib"
       }
     },
     "https": {
@@ -26,7 +27,8 @@
       "launchUrl": "health/live",
       "applicationUrl": "https://localhost:7186;http://localhost:5094",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DYLD_FALLBACK_LIBRARY_PATH": "/opt/homebrew/lib:/usr/local/lib"
       }
     },
     "IIS Express": {

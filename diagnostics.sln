@@ -30,6 +30,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HealthChecks.Exasol", "src\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HealthChecks.Greenplum", "src\HealthChecks.Greenplum\HealthChecks.Greenplum.csproj", "{A5541497-EB30-483E-B1E8-12EF7C2CD659}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HealthChecks.Db2", "src\HealthChecks.Db2\HealthChecks.Db2.csproj", "{64F2C2B1-45F8-4EFE-A953-5386A489FDBC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -220,6 +222,18 @@ Global
 		{A5541497-EB30-483E-B1E8-12EF7C2CD659}.Release|x64.Build.0 = Release|Any CPU
 		{A5541497-EB30-483E-B1E8-12EF7C2CD659}.Release|x86.ActiveCfg = Release|Any CPU
 		{A5541497-EB30-483E-B1E8-12EF7C2CD659}.Release|x86.Build.0 = Release|Any CPU
+		{64F2C2B1-45F8-4EFE-A953-5386A489FDBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64F2C2B1-45F8-4EFE-A953-5386A489FDBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64F2C2B1-45F8-4EFE-A953-5386A489FDBC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{64F2C2B1-45F8-4EFE-A953-5386A489FDBC}.Debug|x64.Build.0 = Debug|Any CPU
+		{64F2C2B1-45F8-4EFE-A953-5386A489FDBC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{64F2C2B1-45F8-4EFE-A953-5386A489FDBC}.Debug|x86.Build.0 = Debug|Any CPU
+		{64F2C2B1-45F8-4EFE-A953-5386A489FDBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64F2C2B1-45F8-4EFE-A953-5386A489FDBC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{64F2C2B1-45F8-4EFE-A953-5386A489FDBC}.Release|x64.ActiveCfg = Release|Any CPU
+		{64F2C2B1-45F8-4EFE-A953-5386A489FDBC}.Release|x64.Build.0 = Release|Any CPU
+		{64F2C2B1-45F8-4EFE-A953-5386A489FDBC}.Release|x86.ActiveCfg = Release|Any CPU
+		{64F2C2B1-45F8-4EFE-A953-5386A489FDBC}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

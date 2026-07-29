@@ -1,6 +1,7 @@
 using Blackened.Blue.Diagnostics.HealthChecks.ClickHouse;
 using Blackened.Blue.Diagnostics.HealthChecks.CockroachDb;
 using Blackened.Blue.Diagnostics.HealthChecks.Couchbase;
+using Blackened.Blue.Diagnostics.HealthChecks.Db2;
 using Blackened.Blue.Diagnostics.HealthChecks.Elasticsearch;
 using Blackened.Blue.Diagnostics.HealthChecks.Exasol;
 using Blackened.Blue.Diagnostics.HealthChecks.Greenplum;
@@ -17,6 +18,7 @@ using Confluent.Kafka;
 using Couchbase;
 using Elastic.Clients.Elasticsearch;
 using Endpoint;
+using IBM.Data.Db2;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using MongoDB.Driver;
@@ -67,6 +69,18 @@ builder.Services.AddHealthChecks()
     .AddCheck<CouchbaseHealthCheck>(name: "Couchbase", tags: ["ready"])
     .AddCheck(name: "Couchbase (connection string)", tags: ["ready"],
         instance: new CouchbaseHealthCheck(builder.Configuration.GetConnectionString("CouchbaseConnection")));
+
+#endregion
+
+#region Db2
+
+builder.Services.AddSingleton(new DB2Connection(builder.Configuration.GetConnectionString("Db2Connection")
+    ?? throw new InvalidOperationException("Db2 services could not be registered because no connection string has been configured for dependency injection.")));
+
+builder.Services.AddHealthChecks()
+    .AddCheck<Db2HealthCheck>(name: "Db2", tags: ["ready"])
+    .AddCheck(name: "Db2 (connection string)", tags: ["ready"],
+        instance: new Db2HealthCheck(builder.Configuration.GetConnectionString("Db2Connection")));
 
 #endregion
 

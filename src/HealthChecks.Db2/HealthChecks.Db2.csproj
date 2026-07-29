@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>Blackened.Blue.Diagnostics.HealthChecks.Db2</RootNamespace>
+        <PackageId>Blackened.Blue.Diagnostics.HealthChecks.Db2</PackageId>
+        <Authors>blackened-blue</Authors>
+        <Copyright>blackened-blue</Copyright>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="8.0.0" />
+    </ItemGroup>
+
+    <!-- The IBM Db2 client ships as separate, OS-specific native-driver packages
+         rather than one cross-platform package like the other providers here. -->
+    <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+        <PackageReference Include="Net.IBM.Data.Db2" Version="8.0.0.520" />
+    </ItemGroup>
+    <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+        <PackageReference Include="Net.IBM.Data.Db2-lnx" Version="8.0.0.520" />
+    </ItemGroup>
+    <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+        <PackageReference Include="Net.IBM.Data.Db2-osx" Version="8.0.0.500" />
+    </ItemGroup>
+
+</Project>
