@@ -425,3 +425,61 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
+
+  # ---------------------------------------------------------------------
+  # Sybase (SAP ASE 16.0 Developer Edition) — SAP doesn't publish an
+  # official image; nguoianphu/docker-sybase is the long-standing de
+  # facto community one (amd64 only, so this runs under emulation on
+  # Apple Silicon — this 2016-era binary triggers Docker Desktop's QEMU
+  # path rather than Rosetta, so startup is noticeably slower than Db2's).
+  # The ASE dataserver and its master device are built into the image at
+  # `docker build` time (server name MYSYBASE, sa/myPassword baked in),
+  # so there are no env vars to configure it — and no volume is mounted
+  # here, since bind-mounting over /opt/sybase/data would overwrite that
+  # prebuilt master device and break startup.
+  #
+  # Known issue on Apple Silicon (github.com/nguoianphu/docker-sybase
+  # issue #3): the dataserver crashes on boot with "It was not possible
+  # to create the disk controllers for the server" because async I/O
+  # isn't supported in this environment. Fix once per container, before
+  # first start (container exits immediately otherwise, but `docker cp`
+  # still works against a stopped container):
+  #   docker cp sybase:/opt/sybase/ASE-16_0/MYSYBASE.cfg MYSYBASE.cfg
+  #   sed -i '' 's/allow sql server async i\/o = DEFAULT/allow sql server async i\/o = 0/' MYSYBASE.cfg
+  #   docker cp MYSYBASE.cfg sybase:/opt/sybase/ASE-16_0/MYSYBASE.cfg
+  #   docker start sybase
+  #
+  # The `master` device the image ships only has ~12MB free (model alone
+  # takes 24MB), too small for `create database` to succeed directly, so
+  # a dedicated device is needed. The `development` login, `helloworld`
+  # database, and admin rights (sa_role) are then seeded once after boot
+  # (the login's password must be quoted — an unquoted numeric literal
+  # trips an implicit int->varchar conversion error in sp_addlogin):
+  #   docker exec -i sybase bash -c "source /opt/sybase/SYBASE.sh && isql -U sa -P myPassword -S MYSYBASE" <<'EOF'
+  #     disk init name='helloworld_dev', physname='/opt/sybase/data/helloworld.dat', size='50M'
+  #     go
+  #     create database helloworld on helloworld_dev = 50
+  #     go
+  #     sp_addlogin development, '123456'
+  #     go
+  #     sp_role 'grant', sa_role, development
+  #     go
+  #   EOF
+  # ---------------------------------------------------------------------
+  sybase:
+    image: nguoianphu/docker-sybase:latest
+    container_name: sybase
+    platform: linux/amd64
+    networks: [diagnostics]
+    ports:
+      # Host 5000 is taken by macOS's own AirPlay Receiver (ControlCenter),
+      # so this maps to 8000/8001 on the host instead, same as the image's
+      # own documented `docker run` example.
+      - "8000:5000"
+      - "8001:5001"
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/5000' || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 30
+      start_period: 120s

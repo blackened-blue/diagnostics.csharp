@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>Blackened.Blue.Diagnostics.HealthChecks.Sybase</RootNamespace>
+        <PackageId>Blackened.Blue.Diagnostics.HealthChecks.Sybase</PackageId>
+        <Authors>blackened-blue</Authors>
+        <Copyright>blackened-blue</Copyright>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AdoNetCore.AseClient" Version="0.19.2" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="8.0.0" />
+    </ItemGroup>
+
+</Project>

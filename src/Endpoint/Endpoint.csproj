@@ -27,6 +27,7 @@
       <ProjectReference Include="..\HealthChecks.Oracle\HealthChecks.Oracle.csproj" />
       <ProjectReference Include="..\HealthChecks.Redis\HealthChecks.Redis.csproj" />
       <ProjectReference Include="..\HealthChecks.Sqlite\HealthChecks.Sqlite.csproj" />
+      <ProjectReference Include="..\HealthChecks.Sybase\HealthChecks.Sybase.csproj" />
     </ItemGroup>
 
 </Project>

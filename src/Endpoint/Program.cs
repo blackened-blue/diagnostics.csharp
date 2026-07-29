@@ -13,6 +13,8 @@ using Blackened.Blue.Diagnostics.HealthChecks.NpgSql;
 using Blackened.Blue.Diagnostics.HealthChecks.Oracle;
 using Blackened.Blue.Diagnostics.HealthChecks.Redis;
 using Blackened.Blue.Diagnostics.HealthChecks.Sqlite;
+using Blackened.Blue.Diagnostics.HealthChecks.Sybase;
+using AdoNetCore.AseClient;
 using ClickHouse.Client.ADO;
 using Confluent.Kafka;
 using Couchbase;
@@ -230,6 +232,18 @@ builder.Services.AddHealthChecks()
     .AddCheck<SqliteHealthCheck>(name: "Sqlite (standalone)", tags: ["ready"])
     .AddCheck(name: "Sqlite (connection string)", tags: ["ready"],
         instance: new SqliteHealthCheck(builder.Configuration.GetConnectionString("SqliteConnection")));
+
+#endregion
+
+#region Sybase
+
+builder.Services.AddSingleton(new AseConnection(builder.Configuration.GetConnectionString("SybaseConnection")
+    ?? throw new InvalidOperationException("Sybase services could not be registered because no connection string has been configured for dependency injection.")));
+
+builder.Services.AddHealthChecks()
+    .AddCheck<SybaseHealthCheck>(name: "Sybase", tags: ["ready"])
+    .AddCheck(name: "Sybase (connection string)", tags: ["ready"],
+        instance: new SybaseHealthCheck(builder.Configuration.GetConnectionString("SybaseConnection")));
 
 #endregion
 
