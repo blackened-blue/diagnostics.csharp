@@ -26,6 +26,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HealthChecks.Couchbase", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HealthChecks.Couchbase", "src\HealthChecks.Couchbase\HealthChecks.Couchbase.csproj", "{3A768EF5-D48C-46DD-8BDF-E6CB9D2BC0AD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HealthChecks.CockroachDb", "src\HealthChecks.CockroachDb\HealthChecks.CockroachDb.csproj", "{ABDAF348-CB1D-4D36-B8B6-D2CD92A026C8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -180,6 +182,18 @@ Global
 		{3A768EF5-D48C-46DD-8BDF-E6CB9D2BC0AD}.Release|x64.Build.0 = Release|Any CPU
 		{3A768EF5-D48C-46DD-8BDF-E6CB9D2BC0AD}.Release|x86.ActiveCfg = Release|Any CPU
 		{3A768EF5-D48C-46DD-8BDF-E6CB9D2BC0AD}.Release|x86.Build.0 = Release|Any CPU
+		{ABDAF348-CB1D-4D36-B8B6-D2CD92A026C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABDAF348-CB1D-4D36-B8B6-D2CD92A026C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABDAF348-CB1D-4D36-B8B6-D2CD92A026C8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{ABDAF348-CB1D-4D36-B8B6-D2CD92A026C8}.Debug|x64.Build.0 = Debug|Any CPU
+		{ABDAF348-CB1D-4D36-B8B6-D2CD92A026C8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{ABDAF348-CB1D-4D36-B8B6-D2CD92A026C8}.Debug|x86.Build.0 = Debug|Any CPU
+		{ABDAF348-CB1D-4D36-B8B6-D2CD92A026C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABDAF348-CB1D-4D36-B8B6-D2CD92A026C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABDAF348-CB1D-4D36-B8B6-D2CD92A026C8}.Release|x64.ActiveCfg = Release|Any CPU
+		{ABDAF348-CB1D-4D36-B8B6-D2CD92A026C8}.Release|x64.Build.0 = Release|Any CPU
+		{ABDAF348-CB1D-4D36-B8B6-D2CD92A026C8}.Release|x86.ActiveCfg = Release|Any CPU
+		{ABDAF348-CB1D-4D36-B8B6-D2CD92A026C8}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

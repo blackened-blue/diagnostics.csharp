@@ -12,6 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\HealthChecks.CockroachDb\HealthChecks.CockroachDb.csproj" />
       <ProjectReference Include="..\HealthChecks.Couchbase\HealthChecks.Couchbase.csproj" />
       <ProjectReference Include="..\HealthChecks.Elasticsearch\HealthChecks.Elasticsearch.csproj" />
       <ProjectReference Include="..\HealthChecks.Kafka\HealthChecks.Kafka.csproj" />

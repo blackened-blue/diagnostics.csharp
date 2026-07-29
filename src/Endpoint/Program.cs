@@ -1,3 +1,4 @@
+using Blackened.Blue.Diagnostics.HealthChecks.CockroachDb;
 using Blackened.Blue.Diagnostics.HealthChecks.Couchbase;
 using Blackened.Blue.Diagnostics.HealthChecks.Elasticsearch;
 using Blackened.Blue.Diagnostics.HealthChecks.Kafka;
@@ -24,6 +25,21 @@ builder.Services.AddAuthorization();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+
+#region CockroachDb
+
+builder.Services.AddDbContext<CockroachDbDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("CockroachDbConnection")
+    ?? throw new InvalidOperationException("CockroachDb services could not be registered because no connection string has been configured for dependency injection.")));
+builder.Services.AddDbContext<CockroachDbHealthCheck>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("CockroachDbConnection")
+    ?? throw new InvalidOperationException("CockroachDb services could not be registered because no connection string has been configured for dependency injection.")));
+
+builder.Services.AddHealthChecks()
+    .AddCheck<CockroachDbHealthCheck<CockroachDbDbContext>>(name: "CockroachDb", tags: ["ready"])
+    .AddCheck<CockroachDbHealthCheck>(name: "CockroachDb (standalone)", tags: ["ready"])
+    .AddCheck(name: "CockroachDb (connection string)", tags: ["ready"],
+        instance: new CockroachDbHealthCheck(builder.Configuration.GetConnectionString("CockroachDbConnection")));
+
+#endregion
 
 #region Couchbase
 
