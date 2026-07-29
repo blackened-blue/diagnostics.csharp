@@ -483,3 +483,47 @@ services:
       timeout: 10s
       retries: 30
       start_period: 120s
+
+  # ---------------------------------------------------------------------
+  # Vertica — no image is published to the official `vertica/vertica-ce`
+  # name; building one from vertica/vertica-containers requires a
+  # registered download of the CE package from my.vertica.com, so this
+  # uses sumitchawla/vertica instead, a long-standing, widely-pulled
+  # community image with Vertica CE 7.1.1 already baked in (amd64 only,
+  # runs under emulation on Apple Silicon like Sybase above). Its own
+  # `/docker-entrypoint.sh` shells out to `gosu` (an ~2016-era static Go
+  # binary) for every step, and that binary crashes on this host with
+  # "runtime: failed to create new OS thread ... fatal error:
+  # runtime.newosproc" — an old-Go-runtime-vs-emulated-clone() incompatibility.
+  # The entrypoint is overridden below to skip gosu entirely and just
+  # keep the container alive; `docker exec -u dbadmin` (Docker's own
+  # user-switching, not the image's) drives setup instead.
+  #
+  # It ships with no env vars for configuring credentials — the intended
+  # boot path would create a prebuilt database called `docker` owned by
+  # OS/DB admin `dbadmin` (no password) — and a Vertica cluster runs
+  # exactly one database at a time, so there's no SQL-level
+  # `CREATE DATABASE`; getting to a `helloworld` database means creating
+  # it directly via admintools instead of letting the (bypassed) entrypoint
+  # create `docker` first, once after first boot:
+  #   docker exec -u dbadmin vertica /opt/vertica/bin/admintools -t create_db -s localhost -d helloworld -c /home/dbadmin/docker/catalog -D /home/dbadmin/docker/data --password=''
+  #   docker exec -u dbadmin vertica /opt/vertica/bin/vsql -d helloworld <<'EOF'
+  #     CREATE USER development IDENTIFIED BY '123456';
+  #     GRANT PSEUDOSUPERUSER TO development;
+  #   EOF
+  # ---------------------------------------------------------------------
+  vertica:
+    image: sumitchawla/vertica:latest
+    container_name: vertica
+    platform: linux/amd64
+    entrypoint: ["/bin/bash", "-c", "chown -R dbadmin:verticadba \"$$VERTICADATA\" && exec tail -f /dev/null"]
+    networks: [diagnostics]
+    ports:
+      # Host 5433 is already taken by the greenplum service above.
+      - "5434:5433"
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/5433' || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 30
+      start_period: 120s

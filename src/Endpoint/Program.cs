@@ -14,6 +14,7 @@ using Blackened.Blue.Diagnostics.HealthChecks.Oracle;
 using Blackened.Blue.Diagnostics.HealthChecks.Redis;
 using Blackened.Blue.Diagnostics.HealthChecks.Sqlite;
 using Blackened.Blue.Diagnostics.HealthChecks.Sybase;
+using Blackened.Blue.Diagnostics.HealthChecks.Vertica;
 using AdoNetCore.AseClient;
 using ClickHouse.Client.ADO;
 using Confluent.Kafka;
@@ -26,6 +27,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using MongoDB.Driver;
 using StackExchange.Redis;
 using System.Data.Odbc;
+using Vertica.Data.VerticaClient;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -244,6 +246,18 @@ builder.Services.AddHealthChecks()
     .AddCheck<SybaseHealthCheck>(name: "Sybase", tags: ["ready"])
     .AddCheck(name: "Sybase (connection string)", tags: ["ready"],
         instance: new SybaseHealthCheck(builder.Configuration.GetConnectionString("SybaseConnection")));
+
+#endregion
+
+#region Vertica
+
+builder.Services.AddSingleton(new VerticaConnection(builder.Configuration.GetConnectionString("VerticaConnection")
+    ?? throw new InvalidOperationException("Vertica services could not be registered because no connection string has been configured for dependency injection.")));
+
+builder.Services.AddHealthChecks()
+    .AddCheck<VerticaHealthCheck>(name: "Vertica", tags: ["ready"])
+    .AddCheck(name: "Vertica (connection string)", tags: ["ready"],
+        instance: new VerticaHealthCheck(builder.Configuration.GetConnectionString("VerticaConnection")));
 
 #endregion
 
