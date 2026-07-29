@@ -3,6 +3,7 @@ using Blackened.Blue.Diagnostics.HealthChecks.CockroachDb;
 using Blackened.Blue.Diagnostics.HealthChecks.Couchbase;
 using Blackened.Blue.Diagnostics.HealthChecks.Elasticsearch;
 using Blackened.Blue.Diagnostics.HealthChecks.Exasol;
+using Blackened.Blue.Diagnostics.HealthChecks.Greenplum;
 using Blackened.Blue.Diagnostics.HealthChecks.Kafka;
 using Blackened.Blue.Diagnostics.HealthChecks.MongoDb;
 using Blackened.Blue.Diagnostics.HealthChecks.MsSql;
@@ -90,6 +91,21 @@ builder.Services.AddHealthChecks()
     .AddCheck<ExasolHealthCheck>(name: "Exasol", tags: ["ready"])
     .AddCheck(name: "Exasol (connection string)", tags: ["ready"],
         instance: new ExasolHealthCheck(builder.Configuration.GetConnectionString("ExasolConnection")));
+
+#endregion
+
+#region Greenplum
+
+builder.Services.AddDbContext<GreenplumDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("GreenplumConnection")
+    ?? throw new InvalidOperationException("Greenplum services could not be registered because no connection string has been configured for dependency injection.")));
+builder.Services.AddDbContext<GreenplumHealthCheck>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("GreenplumConnection")
+    ?? throw new InvalidOperationException("Greenplum services could not be registered because no connection string has been configured for dependency injection.")));
+
+builder.Services.AddHealthChecks()
+    .AddCheck<GreenplumHealthCheck<GreenplumDbContext>>(name: "Greenplum", tags: ["ready"])
+    .AddCheck<GreenplumHealthCheck>(name: "Greenplum (standalone)", tags: ["ready"])
+    .AddCheck(name: "Greenplum (connection string)", tags: ["ready"],
+        instance: new GreenplumHealthCheck(builder.Configuration.GetConnectionString("GreenplumConnection")));
 
 #endregion
 

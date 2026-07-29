@@ -1,0 +1,391 @@
+name: diagnostics
+
+networks:
+  diagnostics:
+    name: diagnostics-net
+
+volumes:
+  clickhouse-data:
+  cockroachdb-data:
+  couchbase-data:
+  elasticsearch-data:
+  greenplum-data:
+  mongodb-data:
+  mssql-data:
+  mysql-data:
+  npgsql-data:
+  oracle-data:
+  redis-data:
+  exasol-data:
+
+services:
+
+  # ---------------------------------------------------------------------
+  # ClickHouse
+  # ---------------------------------------------------------------------
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8
+    container_name: clickhouse
+    networks: [diagnostics]
+    ports:
+      - "8123:8123"   # HTTP (used by ClickHouseConnection)
+      - "9000:9000"   # native TCP
+    environment:
+      CLICKHOUSE_DB: helloworld
+      CLICKHOUSE_USER: development
+      CLICKHOUSE_PASSWORD: "123456"
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    ulimits:
+      nofile: { soft: 262144, hard: 262144 }
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  # ---------------------------------------------------------------------
+  # CockroachDb (single-node, insecure — see appsettings note). The
+  # `development` database/user the app expects isn't created by any env
+  # var here, so seed it once after first boot:
+  #   docker exec -it cockroachdb cockroach sql --insecure -e \
+  #     "CREATE DATABASE IF NOT EXISTS helloworld; \
+  #      CREATE USER IF NOT EXISTS development; \
+  #      GRANT ALL ON DATABASE helloworld TO development;"
+  # ---------------------------------------------------------------------
+  cockroachdb:
+    image: cockroachdb/cockroach:v23.2.11
+    container_name: cockroachdb
+    command: start-single-node --insecure
+    networks: [diagnostics]
+    ports:
+      - "26257:26257"
+      - "8080:8080"   # admin UI / health endpoint
+    volumes:
+      - cockroachdb-data:/cockroach/cockroach-data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/health?ready=1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  # ---------------------------------------------------------------------
+  # Couchbase (community edition, single-node). Needs a one-time cluster
+  # init + `development` RBAC user after first boot:
+  #   docker exec couchbase couchbase-cli node-init -c couchbase:8091 --node-init-hostname 127.0.0.1
+  #   docker exec couchbase couchbase-cli cluster-init -c couchbase:8091 \
+  #     --cluster-username Administrator --cluster-password "L0cal!DevOnly#2026" \
+  #     --cluster-ramsize 512 --cluster-index-ramsize 256 --services data,index,query
+  #   docker exec couchbase couchbase-cli bucket-create -c couchbase:8091 \
+  #     -u Administrator -p "L0cal!DevOnly#2026" --bucket default --bucket-type couchbase --bucket-ramsize 256
+  #   docker exec couchbase couchbase-cli user-manage -c couchbase:8091 \
+  #     -u Administrator -p "L0cal!DevOnly#2026" --set --rbac-username development \
+  #     --rbac-password 123456 --rbac-name development --roles admin --auth-domain local
+  # ---------------------------------------------------------------------
+  couchbase:
+    image: couchbase:community-7.6.2
+    container_name: couchbase
+    networks: [diagnostics]
+    ports:
+      - "8091-8096:8091-8096"
+      - "11210:11210"
+      - "11207:11207"
+      - "18091-18096:18091-18096"
+    volumes:
+      - couchbase-data:/opt/couchbase/var
+    healthcheck:
+      # 200 = REST API up, cluster not yet initialized; 401 = REST API up,
+      # cluster initialized and now requires auth. Either means "reachable".
+      test: ["CMD-SHELL", "code=$$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8091/pools); test \"$$code\" = 200 -o \"$$code\" = 401"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 20s
+
+  # ---------------------------------------------------------------------
+  # Elasticsearch. xpack security is on, so create the `development` user
+  # once after first boot (the built-in superuser is "elastic"):
+  #   curl -s -u elastic:L0cal!DevOnly#2026 -X POST http://localhost:9200/_security/user/development \
+  #     -H 'Content-Type: application/json' -d '{"password":"123456","roles":["superuser"]}'
+  # ---------------------------------------------------------------------
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    container_name: elasticsearch
+    networks: [diagnostics]
+    ports:
+      - "9200:9200"
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "true"
+      ELASTIC_PASSWORD: "L0cal!DevOnly#2026"
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -o /dev/null -w '%{http_code}' http://localhost:9200 | grep -qE '200|401'"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 20s
+
+  # ---------------------------------------------------------------------
+  # Exasol — exasol/docker-db needs a privileged Linux host with 8+ GB RAM
+  # and has no arm64 build, so it doesn't run on this host. exasol/nano is
+  # Exasol's lightweight, arm64-native single-node distribution built for
+  # exactly this (local dev/CI): no --privileged, ~1 GB RAM is enough.
+  # It self-signs a fresh TLS cert on first boot, so the EXAHOST fingerprint
+  # in appsettings.Development.json's ExasolConnection must be regenerated
+  # whenever the exasol-data volume is recreated:
+  #   echo | openssl s_client -connect localhost:8563 -servername localhost 2>/dev/null \
+  #     | openssl x509 -noout -fingerprint -sha256
+  # ---------------------------------------------------------------------
+  exasol:
+    image: exasol/nano:latest
+    container_name: exasol
+    networks: [diagnostics]
+    shm_size: 512m
+    ports:
+      - "8563:8563"
+    volumes:
+      - exasol-data:/exa
+    # exasol/nano is a distroless image (no shell, no coreutils, not even
+    # /bin/sh) so a shell-based healthcheck isn't possible here. It also
+    # ships no client tools, so the `development` user the app's
+    # ExasolConnection expects must be created manually after first boot,
+    # e.g. with pyexasol (pure-Python WebSocket client, no ODBC needed):
+    #   python3 -c "import pyexasol; c = pyexasol.connect(dsn='localhost:8563', \
+    #     user='sys', password='exasol', websocket_sslopt={'cert_reqs': 0}); \
+    #     c.execute('CREATE USER development IDENTIFIED BY \"123456\"'); \
+    #     c.execute('GRANT CREATE SESSION TO development')"
+
+  # ---------------------------------------------------------------------
+  # Greenplum stand-in — real Greenplum is a multi-node MPP cluster that
+  # isn't practical to run in a single dev container. Since the health
+  # check only calls DbContext.Database.CanConnectAsync over the Postgres
+  # wire protocol, a plain Postgres instance is a faithful substitute.
+  # ---------------------------------------------------------------------
+  greenplum:
+    image: postgres:16
+    container_name: greenplum
+    networks: [diagnostics]
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: helloworld
+      POSTGRES_USER: development
+      POSTGRES_PASSWORD: "123456"
+    volumes:
+      - greenplum-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U development -d helloworld"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # ---------------------------------------------------------------------
+  # Kafka (KRaft mode, single broker, SASL_PLAINTEXT/PLAIN)
+  # ---------------------------------------------------------------------
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: kafka
+    networks: [diagnostics]
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
+      # The client-facing listener is named "CLIENT" rather than "SASL_PLAINTEXT":
+      # cp-kafka's env-var translator turns every underscore into a dot, so a
+      # listener literally named SASL_PLAINTEXT produces the mismatched property
+      # key listener.name.sasl.plaintext.* instead of listener.name.sasl_plaintext.*
+      # and Kafka fails to find its own JAAS config. A separate plaintext BROKER
+      # listener handles inter-broker traffic so this single-broker KRaft cluster
+      # doesn't need a SASL client login context of its own.
+      KAFKA_LISTENERS: "CLIENT://0.0.0.0:9092,BROKER://0.0.0.0:9094,CONTROLLER://0.0.0.0:9093"
+      KAFKA_ADVERTISED_LISTENERS: "CLIENT://localhost:9092,BROKER://kafka:9094"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,CLIENT:SASL_PLAINTEXT,BROKER:PLAINTEXT"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "BROKER"
+      KAFKA_SASL_ENABLED_MECHANISMS: "PLAIN"
+      KAFKA_LISTENER_NAME_CLIENT_PLAIN_SASL_JAAS_CONFIG: >-
+        org.apache.kafka.common.security.plain.PlainLoginModule required
+        username="development"
+        password="123456"
+        user_development="123456";
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      # cp-kafka's startup check merely requires KAFKA_OPTS to be non-empty
+      # whenever SASL is enabled; the actual JAAS config is already embedded
+      # per-listener in server.properties via KAFKA_LISTENER_NAME_*_SASL_JAAS_CONFIG,
+      # so this only needs to be a harmless JVM flag, not a real login-config path.
+      KAFKA_OPTS: "-Djava.net.preferIPv4Stack=true"
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/9092' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  # ---------------------------------------------------------------------
+  # MongoDb
+  # ---------------------------------------------------------------------
+  mongodb:
+    image: mongo:7.0
+    container_name: mongodb
+    networks: [diagnostics]
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: development
+      MONGO_INITDB_ROOT_PASSWORD: "123456"
+    volumes:
+      - mongodb-data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "echo 'db.adminCommand(\"ping\")' | mongosh -u development -p 123456 --authenticationDatabase admin --quiet"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  # ---------------------------------------------------------------------
+  # MsSql — mcr.microsoft.com/mssql/server has no arm64 image and crashes
+  # under QEMU emulation on Apple Silicon hosts. Azure SQL Edge is
+  # Microsoft's arm64-native, T-SQL wire-compatible substitute and is the
+  # documented workaround for local dev on M-series Macs. On an amd64
+  # host you can switch this back to mcr.microsoft.com/mssql/server:2022-latest.
+  # azure-sql-edge doesn't bundle sqlcmd itself, so create the SQL login
+  # the app expects using a client image that does, once after first boot:
+  #   docker run --rm --network diagnostics-net mcr.microsoft.com/mssql-tools:latest \
+  #     /opt/mssql-tools/bin/sqlcmd -S mssql -U sa -P "L0cal!DevOnly#2026" -Q \
+  #     "IF NOT EXISTS (SELECT * FROM sys.server_principals WHERE name = 'development') \
+  #      BEGIN CREATE LOGIN [development] WITH PASSWORD = '123456', CHECK_POLICY = OFF; END \
+  #      ALTER SERVER ROLE sysadmin ADD MEMBER [development];"
+  # ---------------------------------------------------------------------
+  mssql:
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    container_name: mssql
+    networks: [diagnostics]
+    ports:
+      - "1433:1433"
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      # Strong password required by the container's own complexity check.
+      # Only used internally by mssql-init; the app connects as [development]/123456.
+      MSSQL_SA_PASSWORD: "L0cal!DevOnly#2026"
+    volumes:
+      - mssql-data:/var/opt/mssql
+    healthcheck:
+      # azure-sql-edge doesn't bundle sqlcmd, so just confirm the TDS port accepts connections.
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/1433' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 20s
+
+  # ---------------------------------------------------------------------
+  # MySql
+  # ---------------------------------------------------------------------
+  mysql:
+    image: mysql:8.4
+    container_name: mysql
+    networks: [diagnostics]
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: "L0cal!DevOnly#2026"
+      MYSQL_DATABASE: db
+      MYSQL_USER: development
+      MYSQL_PASSWORD: "123456"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  # ---------------------------------------------------------------------
+  # NpgSql (plain PostgreSQL)
+  # ---------------------------------------------------------------------
+  npgsql:
+    image: postgres:16
+    container_name: npgsql
+    networks: [diagnostics]
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: development
+      POSTGRES_PASSWORD: "123456"
+    volumes:
+      - npgsql-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U development -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # ---------------------------------------------------------------------
+  # Oracle (Oracle Database Free, gvenzl community image)
+  # ---------------------------------------------------------------------
+  oracle:
+    image: gvenzl/oracle-free:23.5-slim
+    container_name: oracle
+    networks: [diagnostics]
+    ports:
+      - "1521:1521"
+    environment:
+      ORACLE_PASSWORD: "L0cal!DevOnly#2026"
+      APP_USER: development
+      APP_USER_PASSWORD: "123456"
+    volumes:
+      - oracle-data:/opt/oracle/oradata
+    healthcheck:
+      test: ["CMD", "healthcheck.sh"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 60s
+
+  # ---------------------------------------------------------------------
+  # Redis (ACL user matching the app's connection string)
+  # ---------------------------------------------------------------------
+  redis:
+    image: redis:7.4
+    container_name: redis
+    networks: [diagnostics]
+    ports:
+      - "6379:6379"
+    command:
+      - redis-server
+      - --user
+      - default
+      - "on"
+      - nopass
+      - "~*"
+      - "&*"
+      - +@all
+      - --user
+      - development
+      - "on"
+      - ">123456"
+      - "~*"
+      - "&*"
+      - +@all
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli --no-auth-warning -u redis://development:123456@localhost:6379 ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
