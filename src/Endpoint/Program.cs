@@ -1,3 +1,4 @@
+using Blackened.Blue.Diagnostics.HealthChecks.Couchbase;
 using Blackened.Blue.Diagnostics.HealthChecks.Elasticsearch;
 using Blackened.Blue.Diagnostics.HealthChecks.Kafka;
 using Blackened.Blue.Diagnostics.HealthChecks.MongoDb;
@@ -8,6 +9,7 @@ using Blackened.Blue.Diagnostics.HealthChecks.Oracle;
 using Blackened.Blue.Diagnostics.HealthChecks.Redis;
 using Blackened.Blue.Diagnostics.HealthChecks.Sqlite;
 using Confluent.Kafka;
+using Couchbase;
 using Elastic.Clients.Elasticsearch;
 using Endpoint;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +24,18 @@ builder.Services.AddAuthorization();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+
+#region Couchbase
+
+builder.Services.AddSingleton<ICluster>(await Cluster.ConnectAsync(builder.Configuration.GetSection("Couchbase").Get<ClusterOptions>() 
+    ?? throw new InvalidOperationException("Couchbase services could not be registered because no connection string has been configured for dependency injection.")));
+
+builder.Services.AddHealthChecks()
+    .AddCheck<CouchbaseHealthCheck>(name: "Couchbase", tags: ["ready"])
+    .AddCheck(name: "Couchbase (connection string)", tags: ["ready"],
+        instance: new CouchbaseHealthCheck(builder.Configuration.GetConnectionString("CouchbaseConnection")));
+
+#endregion
 
 #region Elasticsearch
 
