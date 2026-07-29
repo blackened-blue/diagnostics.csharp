@@ -2,6 +2,7 @@ using Blackened.Blue.Diagnostics.HealthChecks.ClickHouse;
 using Blackened.Blue.Diagnostics.HealthChecks.CockroachDb;
 using Blackened.Blue.Diagnostics.HealthChecks.Couchbase;
 using Blackened.Blue.Diagnostics.HealthChecks.Elasticsearch;
+using Blackened.Blue.Diagnostics.HealthChecks.Exasol;
 using Blackened.Blue.Diagnostics.HealthChecks.Kafka;
 using Blackened.Blue.Diagnostics.HealthChecks.MongoDb;
 using Blackened.Blue.Diagnostics.HealthChecks.MsSql;
@@ -19,6 +20,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using MongoDB.Driver;
 using StackExchange.Redis;
+using System.Data.Odbc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -76,6 +78,18 @@ builder.Services.AddHealthChecks()
     .AddCheck<ElasticsearchHealthCheck>(name: "Elasticsearch", tags: ["ready"])
     .AddCheck(name: "Elasticsearch (connection string)", tags: ["ready"],
         instance: new ElasticsearchHealthCheck(builder.Configuration.GetConnectionString("ElasticsearchConnection")));
+
+#endregion
+
+#region Exasol
+
+builder.Services.AddSingleton(new OdbcConnection(builder.Configuration.GetConnectionString("ExasolConnection")
+    ?? throw new InvalidOperationException("Exasol services could not be registered because no connection string has been configured for dependency injection.")));
+
+builder.Services.AddHealthChecks()
+    .AddCheck<ExasolHealthCheck>(name: "Exasol", tags: ["ready"])
+    .AddCheck(name: "Exasol (connection string)", tags: ["ready"],
+        instance: new ExasolHealthCheck(builder.Configuration.GetConnectionString("ExasolConnection")));
 
 #endregion
 

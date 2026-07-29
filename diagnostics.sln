@@ -30,6 +30,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HealthChecks.CockroachDb", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HealthChecks.ClickHouse", "src\HealthChecks.ClickHouse\HealthChecks.ClickHouse.csproj", "{86A1095D-B3D6-44A6-AC94-D59419D99170}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HealthChecks.Exasol", "src\HealthChecks.Exasol\HealthChecks.Exasol.csproj", "{CC49A829-1319-4A3C-9FD3-7B958BEFDB7F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -208,6 +210,18 @@ Global
 		{86A1095D-B3D6-44A6-AC94-D59419D99170}.Release|x64.Build.0 = Release|Any CPU
 		{86A1095D-B3D6-44A6-AC94-D59419D99170}.Release|x86.ActiveCfg = Release|Any CPU
 		{86A1095D-B3D6-44A6-AC94-D59419D99170}.Release|x86.Build.0 = Release|Any CPU
+		{CC49A829-1319-4A3C-9FD3-7B958BEFDB7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC49A829-1319-4A3C-9FD3-7B958BEFDB7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC49A829-1319-4A3C-9FD3-7B958BEFDB7F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CC49A829-1319-4A3C-9FD3-7B958BEFDB7F}.Debug|x64.Build.0 = Debug|Any CPU
+		{CC49A829-1319-4A3C-9FD3-7B958BEFDB7F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CC49A829-1319-4A3C-9FD3-7B958BEFDB7F}.Debug|x86.Build.0 = Debug|Any CPU
+		{CC49A829-1319-4A3C-9FD3-7B958BEFDB7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC49A829-1319-4A3C-9FD3-7B958BEFDB7F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC49A829-1319-4A3C-9FD3-7B958BEFDB7F}.Release|x64.ActiveCfg = Release|Any CPU
+		{CC49A829-1319-4A3C-9FD3-7B958BEFDB7F}.Release|x64.Build.0 = Release|Any CPU
+		{CC49A829-1319-4A3C-9FD3-7B958BEFDB7F}.Release|x86.ActiveCfg = Release|Any CPU
+		{CC49A829-1319-4A3C-9FD3-7B958BEFDB7F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
