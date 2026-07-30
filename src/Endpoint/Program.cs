@@ -1,3 +1,4 @@
+using Blackened.Blue.Diagnostics.HealthChecks.Cassandra;
 using Blackened.Blue.Diagnostics.HealthChecks.ClickHouse;
 using Blackened.Blue.Diagnostics.HealthChecks.CockroachDb;
 using Blackened.Blue.Diagnostics.HealthChecks.Couchbase;
@@ -36,6 +37,18 @@ builder.Services.AddAuthorization();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+
+#region Cassandra
+
+builder.Services.AddSingleton(Blackened.Blue.Diagnostics.HealthChecks.Cassandra.OptionsBuilder.UseCassandra(builder.Configuration.GetConnectionString("CassandraConnection")
+    ?? throw new InvalidOperationException("Cassandra services could not be registered because no connection string has been configured for dependency injection.")));
+
+builder.Services.AddHealthChecks()
+    .AddCheck<CassandraHealthCheck>(name: "Cassandra", tags: ["ready"])
+    .AddCheck(name: "Cassandra (connection string)", tags: ["ready"],
+        instance: new CassandraHealthCheck(builder.Configuration.GetConnectionString("CassandraConnection")));
+
+#endregion
 
 #region ClickHouse
 

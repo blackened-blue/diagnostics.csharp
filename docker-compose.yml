@@ -5,6 +5,7 @@ networks:
     name: diagnostics-net
 
 volumes:
+  cassandra-data:
   clickhouse-data:
   cockroachdb-data:
   couchbase-data:
@@ -20,6 +21,46 @@ volumes:
   db2-data:
 
 services:
+
+  # ---------------------------------------------------------------------
+  # Cassandra — this host is running a dozen other DB containers at once
+  # (several JVM-based: Elasticsearch, Oracle), so Cassandra's default
+  # heap auto-sizing over-requested memory and got OOM-killed (exit 137)
+  # against the shared Docker VM; MAX_HEAP_SIZE/HEAP_NEWSIZE cap it to a
+  # small, predictable footprint appropriate for a single dev node.
+  #
+  # The official image boots with AllowAllAuthenticator (no login
+  # required), so getting real `development`/123456 credentials means
+  # switching to PasswordAuthenticator + CassandraAuthorizer and
+  # restarting, once after first boot:
+  #   docker exec cassandra sed -i \
+  #     -e 's/authenticator: AllowAllAuthenticator/authenticator: PasswordAuthenticator/' \
+  #     -e 's/authorizer: AllowAllAuthorizer/authorizer: CassandraAuthorizer/' \
+  #     /etc/cassandra/cassandra.yaml
+  #   docker restart cassandra
+  #   # then, once the restarted node is back up, log in as the default
+  #   # superuser (still cassandra/cassandra — the CassandraAuthorizer
+  #   # tables are seeded fresh, this identity isn't) and add `development`:
+  #   docker exec cassandra cqlsh -u cassandra -p cassandra -e \
+  #     "CREATE ROLE development WITH PASSWORD = '123456' AND LOGIN = true AND SUPERUSER = true;"
+  # ---------------------------------------------------------------------
+  cassandra:
+    image: cassandra:5.0
+    container_name: cassandra
+    networks: [diagnostics]
+    environment:
+      MAX_HEAP_SIZE: "512M"
+      HEAP_NEWSIZE: "128M"
+    ports:
+      - "9042:9042"
+    volumes:
+      - cassandra-data:/var/lib/cassandra
+    healthcheck:
+      test: ["CMD-SHELL", "cqlsh -u development -p 123456 -e 'describe keyspaces' || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 90s
 
   # ---------------------------------------------------------------------
   # ClickHouse
