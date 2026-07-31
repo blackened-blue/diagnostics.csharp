@@ -1,3 +1,4 @@
+using Blackened.Blue.Diagnostics.HealthChecks.ArangoDb;
 using Blackened.Blue.Diagnostics.HealthChecks.Cassandra;
 using Blackened.Blue.Diagnostics.HealthChecks.ClickHouse;
 using Blackened.Blue.Diagnostics.HealthChecks.CockroachDb;
@@ -37,6 +38,18 @@ builder.Services.AddAuthorization();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+
+#region ArangoDb
+
+builder.Services.AddSingleton(Blackened.Blue.Diagnostics.HealthChecks.ArangoDb.OptionsBuilder.UseArangoDb(builder.Configuration.GetConnectionString("ArangoDbConnection")
+    ?? throw new InvalidOperationException("ArangoDb services could not be registered because no connection string has been configured for dependency injection.")));
+
+builder.Services.AddHealthChecks()
+    .AddCheck<ArangoDbHealthCheck>(name: "ArangoDb", tags: ["ready"])
+    .AddCheck(name: "ArangoDb (connection string)", tags: ["ready"],
+        instance: new ArangoDbHealthCheck(builder.Configuration.GetConnectionString("ArangoDbConnection")));
+
+#endregion
 
 #region Cassandra
 

@@ -12,6 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\HealthChecks.ArangoDb\HealthChecks.ArangoDb.csproj" />
       <ProjectReference Include="..\HealthChecks.Cassandra\HealthChecks.Cassandra.csproj" />
       <ProjectReference Include="..\HealthChecks.ClickHouse\HealthChecks.ClickHouse.csproj" />
       <ProjectReference Include="..\HealthChecks.CockroachDb\HealthChecks.CockroachDb.csproj" />

@@ -5,6 +5,7 @@ networks:
     name: diagnostics-net
 
 volumes:
+  arangodb-data:
   cassandra-data:
   clickhouse-data:
   cockroachdb-data:
@@ -21,6 +22,42 @@ volumes:
   db2-data:
 
 services:
+
+  # ---------------------------------------------------------------------
+  # ArangoDB — the root superuser name is fixed (can't be renamed to
+  # `development` the way MongoDb's MONGO_INITDB_ROOT_USERNAME can), so
+  # ARANGO_ROOT_PASSWORD only bootstraps `root`. The `development` admin
+  # account, `helloworld` database, and `message` collection are seeded
+  # once after first boot via arangosh:
+  #   docker exec arangodb arangosh --server.password 'L0cal!DevOnly#2026' --javascript.execute-string '
+  #     require("@arangodb/users").save("development", "123456");
+  #     db._createDatabase("helloworld");
+  #     require("@arangodb/users").grantDatabase("development", "helloworld", "rw");
+  #     db._useDatabase("helloworld");
+  #     db._create("message");
+  #     db.message.save({ value: "Hello World!" });
+  #   '
+  # ---------------------------------------------------------------------
+  arangodb:
+    image: arangodb:latest
+    container_name: arangodb
+    networks: [diagnostics]
+    environment:
+      ARANGO_ROOT_PASSWORD: "L0cal!DevOnly#2026"
+    ports:
+      - "8529:8529"
+    volumes:
+      - arangodb-data:/var/lib/arangodb3
+    healthcheck:
+      # No curl in this image, only wget. `development` is only granted
+      # rw on `helloworld` (not `_system`), so the probe must be scoped
+      # to that database — ArangoDB returns 401, not 403, for a
+      # correctly-authenticated user with no access to the target db.
+      test: ["CMD-SHELL", "wget -q -O /dev/null --header=\"Authorization: Basic ZGV2ZWxvcG1lbnQ6MTIzNDU2\" http://localhost:8529/_db/helloworld/_api/collection || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
 
   # ---------------------------------------------------------------------
   # Cassandra — this host is running a dozen other DB containers at once
