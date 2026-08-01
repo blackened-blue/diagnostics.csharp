@@ -29,6 +29,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using MongoDB.Driver;
 using StackExchange.Redis;
 using System.Data.Odbc;
+using ArangoDBNetStandard.DatabaseApi;
 using Vertica.Data.VerticaClient;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -41,7 +42,7 @@ builder.Services.AddEndpointsApiExplorer();
 
 #region ArangoDb
 
-builder.Services.AddSingleton(Blackened.Blue.Diagnostics.HealthChecks.ArangoDb.OptionsBuilder.UseArangoDb(builder.Configuration.GetConnectionString("ArangoDbConnection")
+builder.Services.AddSingleton<IDatabaseApiClient>(new ArangoDbConnection(builder.Configuration.GetConnectionString("ArangoDbConnection")
     ?? throw new InvalidOperationException("ArangoDb services could not be registered because no connection string has been configured for dependency injection.")));
 
 builder.Services.AddHealthChecks()
@@ -53,7 +54,7 @@ builder.Services.AddHealthChecks()
 
 #region Cassandra
 
-builder.Services.AddSingleton(Blackened.Blue.Diagnostics.HealthChecks.Cassandra.OptionsBuilder.UseCassandra(builder.Configuration.GetConnectionString("CassandraConnection")
+builder.Services.AddSingleton<Cassandra.ICluster>(new CassandraConnection(builder.Configuration.GetConnectionString("CassandraConnection")
     ?? throw new InvalidOperationException("Cassandra services could not be registered because no connection string has been configured for dependency injection.")));
 
 builder.Services.AddHealthChecks()

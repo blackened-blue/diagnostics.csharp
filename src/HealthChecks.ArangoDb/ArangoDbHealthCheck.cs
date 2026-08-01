@@ -11,7 +11,8 @@ public sealed class ArangoDbHealthCheck : IHealthCheck
         => _client = client;
 
     public ArangoDbHealthCheck(string? connectionString)
-        => _client = OptionsBuilder.UseArangoDb(connectionString);
+        => _client = new ArangoDbConnection(connectionString
+            ?? throw new InvalidOperationException("ArangoDb health check is missing its connection string."));
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {

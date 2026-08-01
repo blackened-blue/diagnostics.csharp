@@ -1,11 +1,14 @@
 using ArangoDBNetStandard.DatabaseApi;
+using ArangoDBNetStandard.DatabaseApi.Models;
 using ArangoDBNetStandard.Transport.Http;
 
 namespace Blackened.Blue.Diagnostics.HealthChecks.ArangoDb;
 
-public static class OptionsBuilder
+public sealed class ArangoDbConnection : IDatabaseApiClient
 {
-    public static IDatabaseApiClient UseArangoDb(string? connectionString)
+    private readonly IDatabaseApiClient _client;
+
+    public ArangoDbConnection(string? connectionString)
     {
         if (connectionString is null)
             throw new InvalidOperationException("ArangoDb health check is missing its connection string.");
@@ -38,6 +41,12 @@ public static class OptionsBuilder
 
         var transport = HttpApiTransport.UsingBasicAuth(new Uri($"http://{host}:{port}"), database, username, password);
 
-        return new DatabaseApiClient(transport);
+        _client = new DatabaseApiClient(transport);
     }
+
+    public Task<PostDatabaseResponse> PostDatabaseAsync(PostDatabaseBody request, CancellationToken token = new CancellationToken()) => _client.PostDatabaseAsync(request, token);
+    public Task<DeleteDatabaseResponse> DeleteDatabaseAsync(string databaseName, CancellationToken token = new CancellationToken()) => _client.DeleteDatabaseAsync(databaseName, token);
+    public Task<GetDatabasesResponse> GetDatabasesAsync(CancellationToken token = new CancellationToken()) => _client.GetDatabasesAsync(token);
+    public Task<GetDatabasesResponse> GetUserDatabasesAsync(CancellationToken token = new CancellationToken()) => _client.GetUserDatabasesAsync(token);
+    public Task<GetCurrentDatabaseInfoResponse> GetCurrentDatabaseInfoAsync(CancellationToken token = new CancellationToken()) => _client.GetCurrentDatabaseInfoAsync(token);
 }

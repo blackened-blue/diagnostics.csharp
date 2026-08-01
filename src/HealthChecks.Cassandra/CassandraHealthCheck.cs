@@ -1,4 +1,5 @@
 using Cassandra;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Blackened.Blue.Diagnostics.HealthChecks.Cassandra;
@@ -7,11 +8,13 @@ public sealed class CassandraHealthCheck : IHealthCheck
 {
     private readonly ICluster _client;
 
+    [ActivatorUtilitiesConstructor]
     public CassandraHealthCheck(ICluster client)
         => _client = client;
 
     public CassandraHealthCheck(string? connectionString)
-        => _client = OptionsBuilder.UseCassandra(connectionString);
+        => _client = new CassandraConnection(connectionString
+            ?? throw new InvalidOperationException("Cassandra health check is missing its connection string."));
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {

@@ -16,7 +16,7 @@ public sealed class KafkaHealthCheck: IHealthCheck
         => _client = new AdminClientBuilder(config).Build();
 
     public KafkaHealthCheck(string? connectionString)
-        : this(OptionsBuilder.UseKafka(connectionString
+        : this(new KafkaConnection(connectionString
             ?? throw new InvalidOperationException("Kafka health check is missing its connection string."))) { }
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
